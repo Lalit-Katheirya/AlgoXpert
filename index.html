@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithms Explorer – All Topics | Editable JS</title>
+<style>
+:root {
+  --bg: #1e1e1e; --bg2: #252526; --card: #2d2d2d; --text: #d4d4d4;
+  --bright: #fff; --muted: #858585; --accent: #007acc; --accent2: #1a8ad4;
+  --green: #6a9955; --orange: #ce9178; --red: #f44747; --purple: #c586c0;
+  --cyan: #4ec9b0; --border: #3c3c3c; --input: #3c3c3c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text);
+  min-height: 100vh; display: flex; flex-direction: column;
+  background-image: radial-gradient(ellipse at 10% 0%, rgba(0,122,204,.08) 0%, transparent 40%),
+                    radial-gradient(ellipse at 90% 100%, rgba(197,134,192,.06) 0%, transparent 40%);
+}
+header {
+  padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex;
+  align-items: center; justify-content: space-between; background: var(--bg2);
+}
+header h1 { font-size: 1.25rem; color: var(--bright); font-weight: 600; }
+header .badge { font-size: 11px; background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 10px; }
+
+.app { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 54px); }
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px; min-width: 220px; background: var(--bg2); border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 12px 0;
+}
+.sidebar h3 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  padding: 10px 16px 4px; margin-top: 6px;
+}
+.cat-btn {
+  display: block; width: 100%; text-align: left; padding: 7px 16px; border: none;
+  background: transparent; color: var(--text); font-size: 13px; cursor: pointer;
+  transition: background .12s;
+}
+.cat-btn:hover { background: #333; }
+.cat-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.algo-list {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--border);
+  background: var(--bg); max-height: 120px; overflow-y: auto;
+}
+.algo-chip {
+  padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--card);
+  color: var(--text); font-size: 12.5px; cursor: pointer; transition: all .12s;
+}
+.algo-chip:hover { border-color: var(--accent); color: var(--accent); }
+.algo-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.content { flex: 1; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
+@media (max-width: 1000px) { .content { grid-template-columns: 1fr; } }
+
+.panel {
+  padding: 14px 16px; overflow-y: auto; border-right: 1px solid var(--border);
+}
+.panel:last-child { border-right: none; }
+.panel h2 { font-size: .95rem; color: var(--accent); margin-bottom: 10px; font-weight: 600; }
+
+.complexity {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(100px,1fr)); gap: 6px; margin-bottom: 12px;
+}
+.c-item {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px; text-align: center;
+}
+.c-item .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+.c-item .val { font-size: 13px; font-weight: 700; margin-top: 2px; font-family: Consolas, monospace; }
+.c-item .val.g { color: var(--green); } .c-item .val.b { color: var(--accent); }
+.c-item .val.o { color: var(--orange); } .c-item .val.p { color: var(--purple); }
+
+.desc {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-bottom: 12px;
+}
+
+textarea.code {
+  width: 100%; height: 380px; min-height: 200px; background: #1e1e1e; color: #d4d4d4;
+  border: 1px solid var(--border); border-radius: 6px; padding: 12px;
+  font-family: 'Cascadia Code', Consolas, monospace; font-size: 13px; line-height: 1.5;
+  resize: vertical; tab-size: 2; caret-color: var(--accent); white-space: pre; overflow: auto;
+}
+textarea.code:focus { outline: none; border-color: var(--accent); }
+
+.actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+button {
+  padding: 7px 14px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+button.primary { background: var(--accent); color: #fff; }
+button.primary:hover { background: var(--accent2); }
+button.sec { background: var(--input); color: var(--text); border: 1px solid var(--border); }
+button.sec:hover { background: #444; }
+.status { margin-top: 8px; font-size: 12.5px; color: var(--muted); min-height: 18px; }
+.status.ok { color: var(--cyan); } .status.err { color: var(--red); }
+
+/* Viz areas */
+.viz-area {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  min-height: 160px; margin-bottom: 12px; display: flex; align-items: center;
+  justify-content: center; padding: 12px; overflow: auto; flex-wrap: wrap; gap: 4px;
+}
+.bar {
+  width: 18px; background: linear-gradient(180deg,#3b9eff,var(--accent));
+  border-radius: 2px 2px 0 0; transition: height .1s, background .12s;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.bar span { font-size: 8px; color: #fff; font-weight: 700; margin-bottom: 1px; }
+.bar.compare { background: var(--orange); }
+.bar.swap { background: var(--red); }
+.bar.sorted { background: var(--green); }
+.cell {
+  min-width: 36px; height: 40px; background: var(--bg2); border: 2px solid var(--border);
+  border-radius: 5px; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; font-family: Consolas, monospace; transition: all .15s;
+}
+.cell.cur { border-color: var(--purple); background: rgba(197,134,192,.2); }
+.cell.found { border-color: var(--green); background: rgba(106,153,85,.25); color: var(--green); }
+.cell.elim { opacity: .3; }
+
+.controls-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; }
+.controls-row label { font-size: 12px; color: var(--muted); }
+.controls-row input[type=range] { width: 90px; }
+.controls-row input[type=number] { width: 60px; padding: 4px 6px; background: var(--input); border: 1px solid var(--border); color: var(--text); border-radius: 4px; }
+.controls-row select { padding: 5px 8px; background: var(--input); border: 1px solid var(--border); color: var(--text); border-radius: 4px; font-size: 12px; }
+
+.tip { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Algorithms Explorer</h1>
+  <span class="badge">All Topics • Editable JS • Complexity</span>
+</header>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar"></nav>
+  <div class="main">
+    <div class="algo-list" id="algoList"></div>
+    <div class="content">
+      <div class="panel" id="leftPanel">
+        <h2 id="algoTitle">Select an algorithm</h2>
+        <div class="complexity" id="complexity"></div>
+        <div class="desc" id="desc">Choose a category and algorithm from the left.</div>
+        <div class="controls-row" id="controls" style="display:none"></div>
+        <div class="viz-area" id="viz" style="display:none"></div>
+        <div class="actions" id="vizActions" style="display:none"></div>
+      </div>
+      <div class="panel">
+        <h2>⌨ Editable JavaScript</h2>
+        <p class="tip" id="codeTip">Select an algorithm to see its code.</p>
+        <textarea class="code" id="codeEditor" spellcheck="false"></textarea>
+        <div class="actions">
+          <button class="primary" id="btnRun">Run / Apply</button>
+          <button class="sec" id="btnRestore">Restore</button>
+          <button class="sec" id="btnCopy">Copy</button>
+        </div>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   COMPLETE ALGORITHM DATABASE
+   ================================================================ */
+const DB = {
+  Math: {
+    "Bit Manipulation": {
+      best:"O(1)", avg:"O(1)", worst:"O(1)", space:"O(1)",
+      desc:"Set, get, clear, update bits. Multiply/divide by 2 using shifts. Make negative using two's complement.",
+      code: `// Get bit at position i
+function getBit(n, i) { return (n >> i) & 1; }
+
+// Set bit at position i
+function setBit(n, i) { return n | (1 << i); }
+
+// Clear bit at position i
+function clearBit(n, i) { return n & ~(1 << i); }
+
+// Update bit at position i to value (0 or 1)
+function updateBit(n, i, v) {
+  const mask = ~(1 << i);
+  return (n & mask) | (v << i);
+}
+
+// Multiply by 2 → left shift
+function mul2(n) { return n << 1; }
+
+// Divide by 2 → right shift
+function div2(n) { return n >> 1; }
+
+// Make negative (two's complement)
+function makeNegative(n) { return ~n + 1; }
+
+// Demo
+console.log(getBit(0b1010, 1)); // 1
+console.log(setBit(0b1000, 1)); // 0b1010
+console.log(mul2(5));           // 10
+console.log(makeNegative(5));   // -5`
+    },
+    "Factorial": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"n! = n × (n-1) × … × 1. Iterative and recursive versions.",
+      code: `// Iterative
+function factorial(n) {
+  if (n < 0) return null;
+  let res = 1;
+  for (let i = 2; i <= n; i++) res *= i;
+  return res;
+}
+
+// Recursive
+function factorialRec(n) {
+  if (n <= 1) return 1;
+  return n * factorialRec(n - 1);
+}
+
+console.log(factorial(5));    // 120
+console.log(factorialRec(6)); // 720`
+    },
+    "Fibonacci": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"F(n) = F(n-1) + F(n-2). Classic DP and closed-form (Binet) versions.",
+      code: `// DP / Iterative O(n)
+function fib(n) {
+  if (n <= 1) return n;
+  let a = 0, b = 1;
+  for (let i = 2; i <= n; i++) {
+    [a, b] = [b, a + b];
+  }
+  return b;
+}
+
+// Closed-form (Binet) – approximate for large n
+function fibBinet(n) {
+  const phi = (1 + Math.sqrt(5)) / 2;
+  return Math.round(Math.pow(phi, n) / Math.sqrt(5));
+}
+
+console.log(fib(10));      // 55
+console.log(fibBinet(10)); // 55`
+    },
+    "Prime Factors": {
+      best:"O(√n)", avg:"O(√n)", worst:"O(√n)", space:"O(log n)",
+      desc:"Find all prime factors of n by trial division up to √n.",
+      code: `function primeFactors(n) {
+  const factors = [];
+  // Handle 2 separately
+  while (n % 2 === 0) { factors.push(2); n /= 2; }
+  // Odd factors
+  for (let i = 3; i * i <= n; i += 2) {
+    while (n % i === 0) { factors.push(i); n /= i; }
+  }
+  if (n > 2) factors.push(n);
+  return factors;
+}
+
+console.log(primeFactors(84)); // [2, 2, 3, 7]`
+    },
+    "Primality Test": {
+      best:"O(√n)", avg:"O(√n)", worst:"O(√n)", space:"O(1)",
+      desc:"Trial division: check divisibility up to √n.",
+      code: `function isPrime(n) {
+  if (n <= 1) return false;
+  if (n <= 3) return true;
+  if (n % 2 === 0 || n % 3 === 0) return false;
+  for (let i = 5; i * i <= n; i += 6) {
+    if (n % i === 0 || n % (i + 2) === 0) return false;
+  }
+  return true;
+}
+
+console.log(isPrime(17)); // true
+console.log(isPrime(15)); // false`
+    },
+    "Euclidean GCD": {
+      best:"O(log min(a,b))", avg:"O(log min(a,b))", worst:"O(log min(a,b))", space:"O(1)",
+      desc:"Greatest Common Divisor using Euclidean algorithm (repeated modulo).",
+      code: `function gcd(a, b) {
+  while (b !== 0) {
+    [a, b] = [b, a % b];
+  }
+  return a;
+}
+
+// Recursive
+function gcdRec(a, b) {
+  return b === 0 ? a : gcdRec(b, a % b);
+}
+
+console.log(gcd(48, 18)); // 6`
+    },
+    "LCM": {
+      best:"O(log min(a,b))", avg:"O(log min(a,b))", worst:"O(log min(a,b))", space:"O(1)",
+      desc:"Least Common Multiple. LCM(a,b) = |a×b| / GCD(a,b).",
+      code: `function gcd(a, b) {
+  while (b) [a, b] = [b, a % b];
+  return a;
+}
+function lcm(a, b) {
+  return Math.abs(a * b) / gcd(a, b);
+}
+
+console.log(lcm(12, 18)); // 36`
+    },
+    "Sieve of Eratosthenes": {
+      best:"O(n log log n)", avg:"O(n log log n)", worst:"O(n log log n)", space:"O(n)",
+      desc:"Find all primes ≤ n by marking multiples of each prime.",
+      code: `function sieve(n) {
+  const isPrime = new Array(n + 1).fill(true);
+  isPrime[0] = isPrime[1] = false;
+  for (let i = 2; i * i <= n; i++) {
+    if (isPrime[i]) {
+      for (let j = i * i; j <= n; j += i) isPrime[j] = false;
+    }
+  }
+  return isPrime.map((v, i) => v ? i : null).filter(x => x !== null);
+}
+
+console.log(sieve(30)); // [2,3,5,7,11,13,17,19,23,29]`
+    },
+    "Is Power of Two": {
+      best:"O(1)", avg:"O(1)", worst:"O(1)", space:"O(1)",
+      desc:"Bitwise trick: n > 0 && (n & (n-1)) === 0.",
+      code: `function isPowerOfTwo(n) {
+  return n > 0 && (n & (n - 1)) === 0;
+}
+
+// Naive
+function isPowerOfTwoNaive(n) {
+  if (n <= 0) return false;
+  while (n % 2 === 0) n /= 2;
+  return n === 1;
+}
+
+console.log(isPowerOfTwo(16)); // true
+console.log(isPowerOfTwo(18)); // false`
+    },
+    "Pascal's Triangle": {
+      best:"O(n²)", avg:"O(n²)", worst:"O(n²)", space:"O(n²)",
+      desc:"Each number is the sum of the two numbers directly above it.",
+      code: `function pascal(n) {
+  const tri = [];
+  for (let i = 0; i < n; i++) {
+    tri[i] = [1];
+    for (let j = 1; j < i; j++) {
+      tri[i][j] = tri[i-1][j-1] + tri[i-1][j];
+    }
+    if (i > 0) tri[i].push(1);
+  }
+  return tri;
+}
+
+console.log(pascal(5));
+// [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]]`
+    },
+    "Fast Powering": {
+      best:"O(log n)", avg:"O(log n)", worst:"O(log n)", space:"O(1)",
+      desc:"Exponentiation by squaring. Compute base^exp in logarithmic time.",
+      code: `function fastPow(base, exp) {
+  let result = 1n;
+  base = BigInt(base);
+  exp = BigInt(exp);
+  while (exp > 0n) {
+    if (exp & 1n) result *= base;
+    base *= base;
+    exp >>= 1n;
+  }
+  return result;
+}
+
+console.log(Number(fastPow(2, 10))); // 1024
+console.log(Number(fastPow(3, 5)));  // 243`
+    },
+    "Horner's Method": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Efficient polynomial evaluation: a₀ + a₁x + a₂x² + … = a₀ + x(a₁ + x(a₂ + …))",
+      code: `// Evaluate polynomial with coefficients [a0, a1, a2, ...] at x
+function horner(coeffs, x) {
+  let result = 0;
+  for (let i = coeffs.length - 1; i >= 0; i--) {
+    result = result * x + coeffs[i];
+  }
+  return result;
+}
+
+// 2x³ + 3x² + 5  at x=2  →  2*8 + 3*4 + 5 = 33
+console.log(horner([5, 0, 3, 2], 2)); // 33`
+    },
+    "Euclidean Distance": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Distance between two points/vectors: √(Σ(ai-bi)²)",
+      code: `function euclideanDistance(a, b) {
+  if (a.length !== b.length) throw new Error('Dimension mismatch');
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) {
+    sum += (a[i] - b[i]) ** 2;
+  }
+  return Math.sqrt(sum);
+}
+
+console.log(euclideanDistance([0,0], [3,4])); // 5
+console.log(euclideanDistance([1,2,3], [4,5,6])); // ≈5.196`
+    }
+  },
+
+  Sets: {
+    "Cartesian Product": {
+      best:"O(n×m)", avg:"O(n×m)", worst:"O(n×m)", space:"O(n×m)",
+      desc:"All ordered pairs (a,b) where a∈A, b∈B.",
+      code: `function cartesianProduct(a, b) {
+  const result = [];
+  for (const x of a)
+    for (const y of b)
+      result.push([x, y]);
+  return result;
+}
+
+console.log(cartesianProduct([1,2], ['a','b']));
+// [[1,'a'],[1,'b'],[2,'a'],[2,'b']]`
+    },
+    "Fisher-Yates Shuffle": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Uniform random permutation of an array (in-place).",
+      code: `function fisherYates(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+console.log(fisherYates([1,2,3,4,5]));`
+    },
+    "Power Set": {
+      best:"O(2ⁿ)", avg:"O(2ⁿ)", worst:"O(2ⁿ)", space:"O(2ⁿ)",
+      desc:"All subsets of a set. Bitwise method is elegant.",
+      code: `function powerSet(arr) {
+  const n = arr.length;
+  const result = [];
+  for (let mask = 0; mask < (1 << n); mask++) {
+    const subset = [];
+    for (let i = 0; i < n; i++) {
+      if (mask & (1 << i)) subset.push(arr[i]);
+    }
+    result.push(subset);
+  }
+  return result;
+}
+
+console.log(powerSet([1,2,3]));
+// [[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]`
+    },
+    "Permutations": {
+      best:"O(n!)", avg:"O(n!)", worst:"O(n!)", space:"O(n!)",
+      desc:"All possible orderings of elements (without repetitions).",
+      code: `function permutations(arr) {
+  if (arr.length <= 1) return [arr];
+  const result = [];
+  for (let i = 0; i < arr.length; i++) {
+    const rest = [...arr.slice(0,i), ...arr.slice(i+1)];
+    for (const p of permutations(rest)) {
+      result.push([arr[i], ...p]);
+    }
+  }
+  return result;
+}
+
+console.log(permutations([1,2,3]));
+// [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]`
+    },
+    "Combinations": {
+      best:"O(C(n,k))", avg:"O(C(n,k))", worst:"O(C(n,k))", space:"O(C(n,k))",
+      desc:"All ways to choose k elements from n (order doesn't matter).",
+      code: `function combinations(arr, k) {
+  if (k === 0) return [[]];
+  if (arr.length < k) return [];
+  const [first, ...rest] = arr;
+  const withFirst = combinations(rest, k - 1).map(c => [first, ...c]);
+  const withoutFirst = combinations(rest, k);
+  return [...withFirst, ...withoutFirst];
+}
+
+console.log(combinations([1,2,3,4], 2));
+// [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]`
+    },
+    "Longest Common Subsequence": {
+      best:"O(mn)", avg:"O(mn)", worst:"O(mn)", space:"O(mn)",
+      desc:"Longest sequence that appears in both strings in the same order (not necessarily contiguous).",
+      code: `function LCS(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, () => Array(n+1).fill(0));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1] + 1
+        : Math.max(dp[i-1][j], dp[i][j-1]);
+  return dp[m][n];
+}
+
+console.log(LCS('ABCDGH', 'AEDFHR')); // 3 (ADH)`
+    },
+    "Maximum Subarray (Kadane)": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Find contiguous subarray with maximum sum. Kadane's algorithm.",
+      code: `function maxSubarray(arr) {
+  let maxSoFar = arr[0], maxEnding = arr[0];
+  for (let i = 1; i < arr.length; i++) {
+    maxEnding = Math.max(arr[i], maxEnding + arr[i]);
+    maxSoFar = Math.max(maxSoFar, maxEnding);
+  }
+  return maxSoFar;
+}
+
+console.log(maxSubarray([-2,1,-3,4,-1,2,1,-5,4])); // 6 (4,-1,2,1)`
+    },
+    "0/1 Knapsack": {
+      best:"O(nW)", avg:"O(nW)", worst:"O(nW)", space:"O(nW)",
+      desc:"Select items with given weights & values to maximize value without exceeding capacity W.",
+      code: `function knapsack(weights, values, W) {
+  const n = weights.length;
+  const dp = Array.from({length: n+1}, () => Array(W+1).fill(0));
+  for (let i = 1; i <= n; i++) {
+    for (let w = 0; w <= W; w++) {
+      if (weights[i-1] <= w)
+        dp[i][w] = Math.max(dp[i-1][w], values[i-1] + dp[i-1][w - weights[i-1]]);
+      else
+        dp[i][w] = dp[i-1][w];
+    }
+  }
+  return dp[n][W];
+}
+
+console.log(knapsack([1,3,4,5], [1,4,5,7], 7)); // 9`
+    }
+  },
+
+  Strings: {
+    "Hamming Distance": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Number of positions at which two strings of equal length differ.",
+      code: `function hammingDistance(a, b) {
+  if (a.length !== b.length) throw new Error('Lengths must match');
+  let dist = 0;
+  for (let i = 0; i < a.length; i++)
+    if (a[i] !== b[i]) dist++;
+  return dist;
+}
+
+console.log(hammingDistance('karolin', 'kathrin')); // 3
+console.log(hammingDistance('10110', '11100'));     // 2`
+    },
+    "Palindrome Check": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Check if a string reads the same forwards and backwards.",
+      code: `function isPalindrome(s) {
+  s = s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  let l = 0, r = s.length - 1;
+  while (l < r) {
+    if (s[l] !== s[r]) return false;
+    l++; r--;
+  }
+  return true;
+}
+
+console.log(isPalindrome('A man a plan a canal Panama')); // true
+console.log(isPalindrome('hello')); // false`
+    },
+    "Levenshtein Distance": {
+      best:"O(mn)", avg:"O(mn)", worst:"O(mn)", space:"O(mn)",
+      desc:"Minimum number of single-character edits (insert, delete, replace) to change one string into another.",
+      code: `function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, () => Array(n+1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i-1][j] + 1,      // delete
+        dp[i][j-1] + 1,      // insert
+        dp[i-1][j-1] + cost  // replace
+      );
+    }
+  }
+  return dp[m][n];
+}
+
+console.log(levenshtein('kitten', 'sitting')); // 3`
+    },
+    "KMP Algorithm": {
+      best:"O(n+m)", avg:"O(n+m)", worst:"O(n+m)", space:"O(m)",
+      desc:"Efficient substring search using longest proper prefix which is also suffix (LPS) array.",
+      code: `function buildLPS(pattern) {
+  const lps = Array(pattern.length).fill(0);
+  let len = 0, i = 1;
+  while (i < pattern.length) {
+    if (pattern[i] === pattern[len]) {
+      lps[i++] = ++len;
+    } else if (len > 0) {
+      len = lps[len - 1];
+    } else {
+      lps[i++] = 0;
+    }
+  }
+  return lps;
+}
+
+function KMP(text, pattern) {
+  const lps = buildLPS(pattern);
+  const result = [];
+  let i = 0, j = 0;
+  while (i < text.length) {
+    if (text[i] === pattern[j]) { i++; j++; }
+    if (j === pattern.length) {
+      result.push(i - j);
+      j = lps[j - 1];
+    } else if (i < text.length && text[i] !== pattern[j]) {
+      j !== 0 ? j = lps[j - 1] : i++;
+    }
+  }
+  return result;
+}
+
+console.log(KMP('ababcababa', 'aba')); // [0, 5, 7]`
+    },
+    "Rabin-Karp": {
+      best:"O(n+m)", avg:"O(n+m)", worst:"O(nm)", space:"O(1)",
+      desc:"Substring search using rolling hash. Average linear, worst quadratic.",
+      code: `function rabinKarp(text, pattern) {
+  const n = text.length, m = pattern.length;
+  if (m > n) return [];
+  const base = 256, mod = 1e9 + 7;
+  let pHash = 0, tHash = 0, power = 1;
+  for (let i = 0; i < m; i++) {
+    pHash = (pHash * base + pattern.charCodeAt(i)) % mod;
+    tHash = (tHash * base + text.charCodeAt(i)) % mod;
+    if (i < m - 1) power = (power * base) % mod;
+  }
+  const result = [];
+  for (let i = 0; i <= n - m; i++) {
+    if (pHash === tHash && text.slice(i, i + m) === pattern)
+      result.push(i);
+    if (i < n - m) {
+      tHash = (tHash - text.charCodeAt(i) * power % mod + mod) % mod;
+      tHash = (tHash * base + text.charCodeAt(i + m)) % mod;
+    }
+  }
+  return result;
+}
+
+console.log(rabinKarp('abracadabra', 'abra')); // [0, 7]`
+    }
+  },
+
+  Searches: {
+    "Linear Search": {
+      best:"O(1)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Check every element until target is found. Works on unsorted data.",
+      viz: true, code: `async function linearSearch(arr, target) {
+  for (let i = 0; i < arr.length; i++) {
+    await highlight(i, 'cur');
+    if (arr[i] === target) {
+      markFound(i);
+      return i;
+    }
+  }
+  return -1;
+}`
+    },
+    "Binary Search": {
+      best:"O(1)", avg:"O(log n)", worst:"O(log n)", space:"O(1)",
+      desc:"Requires sorted array. Repeatedly halve the search space.",
+      viz: true, code: `async function binarySearch(arr, target) {
+  let lo = 0, hi = arr.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    await highlight(mid, 'cur');
+    if (arr[mid] === target) { markFound(mid); return mid; }
+    if (arr[mid] < target) {
+      for (let i = lo; i <= mid; i++) markElim(i);
+      lo = mid + 1;
+    } else {
+      for (let i = mid; i <= hi; i++) markElim(i);
+      hi = mid - 1;
+    }
+    await sleep(200);
+  }
+  return -1;
+}`
+    },
+    "Jump Search": {
+      best:"O(√n)", avg:"O(√n)", worst:"O(√n)", space:"O(1)",
+      desc:"Jump ahead by √n blocks, then linear search in the block. Requires sorted array.",
+      code: `function jumpSearch(arr, target) {
+  const n = arr.length;
+  const step = Math.floor(Math.sqrt(n));
+  let prev = 0;
+  while (arr[Math.min(step, n) - 1] < target) {
+    prev = step;
+    step += Math.floor(Math.sqrt(n));
+    if (prev >= n) return -1;
+  }
+  for (let i = prev; i < Math.min(step, n); i++) {
+    if (arr[i] === target) return i;
+  }
+  return -1;
+}
+
+console.log(jumpSearch([0,1,2,3,4,5,6,7,8,9], 7)); // 7`
+    },
+    "Interpolation Search": {
+      best:"O(log log n)", avg:"O(log log n)", worst:"O(n)", space:"O(1)",
+      desc:"Improved binary search for uniformly distributed sorted arrays. Estimates position.",
+      code: `function interpolationSearch(arr, target) {
+  let lo = 0, hi = arr.length - 1;
+  while (lo <= hi && target >= arr[lo] && target <= arr[hi]) {
+    if (lo === hi) return arr[lo] === target ? lo : -1;
+    const pos = lo + Math.floor(
+      ((hi - lo) / (arr[hi] - arr[lo])) * (target - arr[lo])
+    );
+    if (arr[pos] === target) return pos;
+    if (arr[pos] < target) lo = pos + 1;
+    else hi = pos - 1;
+  }
+  return -1;
+}
+
+console.log(interpolationSearch([10,20,30,40,50,60], 40)); // 3`
+    }
+  },
+
+  Sorting: {
+    "Bubble Sort": {
+      best:"O(n)", avg:"O(n²)", worst:"O(n²)", space:"O(1)",
+      desc:"Repeatedly swap adjacent elements if out of order. Optimized with early exit.",
+      viz: true, code: `async function bubbleSort(arr) {
+  const n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    let swapped = false;
+    for (let j = 0; j < n - i - 1; j++) {
+      await highlight(j, j+1, 'compare');
+      if (arr[j] > arr[j+1]) { await swap(j, j+1); swapped = true; }
+    }
+    markSorted(n - i - 1);
+    if (!swapped) break;
+  }
+  markSorted(0);
+}`
+    },
+    "Selection Sort": {
+      best:"O(n²)", avg:"O(n²)", worst:"O(n²)", space:"O(1)",
+      desc:"Find minimum in unsorted portion and place it at the front.",
+      viz: true, code: `async function selectionSort(arr) {
+  const n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    let min = i;
+    for (let j = i + 1; j < n; j++) {
+      await highlight(min, j, 'compare');
+      if (arr[j] < arr[min]) min = j;
+    }
+    if (min !== i) await swap(i, min);
+    markSorted(i);
+  }
+  markSorted(n - 1);
+}`
+    },
+    "Insertion Sort": {
+      best:"O(n)", avg:"O(n²)", worst:"O(n²)", space:"O(1)",
+      desc:"Build sorted prefix by inserting each element into correct position.",
+      viz: true, code: `async function insertionSort(arr) {
+  markSorted(0);
+  for (let i = 1; i < arr.length; i++) {
+    let key = arr[i], j = i - 1;
+    await highlight(i, undefined, 'compare');
+    while (j >= 0 && arr[j] > key) {
+      await highlight(j, j+1, 'compare');
+      arr[j+1] = arr[j]; updateBar(j+1); j--;
+    }
+    arr[j+1] = key; updateBar(j+1);
+    for (let k = 0; k <= i; k++) markSorted(k);
+  }
+}`
+    },
+    "Merge Sort": {
+      best:"O(n log n)", avg:"O(n log n)", worst:"O(n log n)", space:"O(n)",
+      desc:"Divide into halves, sort recursively, merge. Stable and guaranteed O(n log n).",
+      viz: true, code: `async function merge(arr, l, m, r) {
+  const L = arr.slice(l, m+1), R = arr.slice(m+1, r+1);
+  let i = 0, j = 0, k = l;
+  while (i < L.length && j < R.length) {
+    await highlight(k, undefined, 'compare');
+    arr[k] = L[i] <= R[j] ? L[i++] : R[j++];
+    updateBar(k++);
+  }
+  while (i < L.length) { arr[k] = L[i++]; updateBar(k++); }
+  while (j < R.length) { arr[k] = R[j++]; updateBar(k++); }
+}
+async function mergeSort(arr, l = 0, r = arr.length - 1) {
+  if (l < r) {
+    const m = (l + r) >> 1;
+    await mergeSort(arr, l, m);
+    await mergeSort(arr, m + 1, r);
+    await merge(arr, l, m, r);
+  }
+  if (l === 0 && r === arr.length - 1)
+    for (let i = 0; i < arr.length; i++) markSorted(i);
+}`
+    },
+    "Quick Sort": {
+      best:"O(n log n)", avg:"O(n log n)", worst:"O(n²)", space:"O(log n)",
+      desc:"Pick pivot, partition, recurse. Excellent average performance.",
+      viz: true, code: `async function partition(arr, lo, hi) {
+  const pivot = arr[hi];
+  bars[hi].classList.add('pivot');
+  let i = lo - 1;
+  for (let j = lo; j < hi; j++) {
+    await highlight(j, hi, 'compare');
+    if (arr[j] < pivot) { i++; await swap(i, j); }
+  }
+  await swap(i + 1, hi);
+  bars[hi].classList.remove('pivot');
+  return i + 1;
+}
+async function quickSort(arr, lo = 0, hi = arr.length - 1) {
+  if (lo < hi) {
+    const p = await partition(arr, lo, hi);
+    markSorted(p);
+    await quickSort(arr, lo, p - 1);
+    await quickSort(arr, p + 1, hi);
+  } else if (lo === hi) markSorted(lo);
+}`
+    },
+    "Heap Sort": {
+      best:"O(n log n)", avg:"O(n log n)", worst:"O(n log n)", space:"O(1)",
+      desc:"Build max-heap, repeatedly extract max and place at end.",
+      code: `function heapSort(arr) {
+  const n = arr.length;
+  const heapify = (n, i) => {
+    let largest = i, l = 2*i+1, r = 2*i+2;
+    if (l < n && arr[l] > arr[largest]) largest = l;
+    if (r < n && arr[r] > arr[largest]) largest = r;
+    if (largest !== i) {
+      [arr[i], arr[largest]] = [arr[largest], arr[i]];
+      heapify(n, largest);
+    }
+  };
+  for (let i = Math.floor(n/2)-1; i >= 0; i--) heapify(n, i);
+  for (let i = n-1; i > 0; i--) {
+    [arr[0], arr[i]] = [arr[i], arr[0]];
+    heapify(i, 0);
+  }
+  return arr;
+}
+
+console.log(heapSort([12,11,13,5,6,7]));`
+    },
+    "Counting Sort": {
+      best:"O(n+k)", avg:"O(n+k)", worst:"O(n+k)", space:"O(k)",
+      desc:"Count occurrences of each value. Efficient when range k is small.",
+      code: `function countingSort(arr) {
+  if (!arr.length) return arr;
+  const max = Math.max(...arr);
+  const count = Array(max + 1).fill(0);
+  for (const x of arr) count[x]++;
+  const result = [];
+  for (let i = 0; i <= max; i++)
+    while (count[i]--) result.push(i);
+  return result;
+}
+
+console.log(countingSort([4,2,2,8,3,3,1])); // [1,2,2,3,3,4,8]`
+    },
+    "Radix Sort": {
+      best:"O(nk)", avg:"O(nk)", worst:"O(nk)", space:"O(n+k)",
+      desc:"Sort by individual digits starting from least significant digit.",
+      code: `function countingSortByDigit(arr, exp) {
+  const n = arr.length, output = Array(n), count = Array(10).fill(0);
+  for (let i = 0; i < n; i++) count[Math.floor(arr[i] / exp) % 10]++;
+  for (let i = 1; i < 10; i++) count[i] += count[i-1];
+  for (let i = n-1; i >= 0; i--) {
+    const d = Math.floor(arr[i] / exp) % 10;
+    output[--count[d]] = arr[i];
+  }
+  return output;
+}
+function radixSort(arr) {
+  const max = Math.max(...arr);
+  let result = [...arr];
+  for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10)
+    result = countingSortByDigit(result, exp);
+  return result;
+}
+
+console.log(radixSort([170,45,75,90,802,24,2,66]));`
+    }
+  },
+
+  Graphs: {
+    "BFS": {
+      best:"O(V+E)", avg:"O(V+E)", worst:"O(V+E)", space:"O(V)",
+      desc:"Breadth-First Search. Explore level by level using a queue. Shortest path in unweighted graphs.",
+      code: `function BFS(graph, start) {
+  const visited = new Set([start]);
+  const queue = [start];
+  const order = [];
+  while (queue.length) {
+    const node = queue.shift();
+    order.push(node);
+    for (const nei of (graph[node] || [])) {
+      if (!visited.has(nei)) {
+        visited.add(nei);
+        queue.push(nei);
+      }
+    }
+  }
+  return order;
+}
+
+const g = { A:['B','C'], B:['A','D'], C:['A','D'], D:['B','C','E'], E:['D'] };
+console.log(BFS(g, 'A')); // ['A','B','C','D','E']`
+    },
+    "DFS": {
+      best:"O(V+E)", avg:"O(V+E)", worst:"O(V+E)", space:"O(V)",
+      desc:"Depth-First Search. Explore as deep as possible using stack/recursion.",
+      code: `function DFS(graph, start) {
+  const visited = new Set();
+  const order = [];
+  function explore(node) {
+    visited.add(node);
+    order.push(node);
+    for (const nei of (graph[node] || []))
+      if (!visited.has(nei)) explore(nei);
+  }
+  explore(start);
+  return order;
+}
+
+const g = { A:['B','C'], B:['A','D'], C:['A','D'], D:['B','C','E'], E:['D'] };
+console.log(DFS(g, 'A'));`
+    },
+    "Dijkstra": {
+      best:"O((V+E) log V)", avg:"O((V+E) log V)", worst:"O((V+E) log V)", space:"O(V)",
+      desc:"Shortest paths from a single source in a weighted graph with non-negative weights.",
+      code: `function dijkstra(graph, start) {
+  const dist = {};
+  const pq = [[0, start]]; // [distance, node]
+  for (const node of Object.keys(graph)) dist[node] = Infinity;
+  dist[start] = 0;
+
+  while (pq.length) {
+    pq.sort((a, b) => a[0] - b[0]);
+    const [d, u] = pq.shift();
+    if (d > dist[u]) continue;
+    for (const [v, w] of (graph[u] || [])) {
+      if (dist[u] + w < dist[v]) {
+        dist[v] = dist[u] + w;
+        pq.push([dist[v], v]);
+      }
+    }
+  }
+  return dist;
+}
+
+const g = {
+  A: [['B',4],['C',2]],
+  B: [['C',1],['D',5]],
+  C: [['D',8],['E',10]],
+  D: [['E',2]],
+  E: []
+};
+console.log(dijkstra(g, 'A')); // {A:0, B:4, C:2, D:9, E:11}`
+    },
+    "Bellman-Ford": {
+      best:"O(VE)", avg:"O(VE)", worst:"O(VE)", space:"O(V)",
+      desc:"Shortest paths from single source. Handles negative weights. Detects negative cycles.",
+      code: `function bellmanFord(edges, n, start) {
+  const dist = Array(n).fill(Infinity);
+  dist[start] = 0;
+  for (let i = 0; i < n - 1; i++) {
+    for (const [u, v, w] of edges) {
+      if (dist[u] + w < dist[v]) dist[v] = dist[u] + w;
+    }
+  }
+  // Check negative cycle
+  for (const [u, v, w] of edges) {
+    if (dist[u] + w < dist[v]) return { error: 'Negative cycle' };
+  }
+  return dist;
+}
+
+// edges: [u, v, weight], n = number of vertices
+console.log(bellmanFord([[0,1,4],[0,2,2],[1,2,-1],[1,3,5],[2,3,8]], 4, 0));`
+    },
+    "Floyd-Warshall": {
+      best:"O(V³)", avg:"O(V³)", worst:"O(V³)", space:"O(V²)",
+      desc:"All-pairs shortest paths. Works with negative weights (no negative cycles).",
+      code: `function floydWarshall(graph) {
+  const n = graph.length;
+  const dist = graph.map(row => [...row]);
+  for (let k = 0; k < n; k++)
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++)
+        if (dist[i][k] + dist[k][j] < dist[i][j])
+          dist[i][j] = dist[i][k] + dist[k][j];
+  return dist;
+}
+
+const INF = 999;
+const g = [
+  [0, 5, INF, 10],
+  [INF, 0, 3, INF],
+  [INF, INF, 0, 1],
+  [INF, INF, INF, 0]
+];
+console.log(floydWarshall(g));`
+    },
+    "Kruskal MST": {
+      best:"O(E log E)", avg:"O(E log E)", worst:"O(E log E)", space:"O(V)",
+      desc:"Minimum Spanning Tree using Union-Find. Sort edges and add if no cycle.",
+      code: `function kruskal(n, edges) {
+  // edges: [u, v, weight]
+  edges.sort((a, b) => a[2] - b[2]);
+  const parent = Array.from({length: n}, (_, i) => i);
+  const find = x => parent[x] === x ? x : (parent[x] = find(parent[x]));
+  const mst = [];
+  for (const [u, v, w] of edges) {
+    const pu = find(u), pv = find(v);
+    if (pu !== pv) {
+      parent[pu] = pv;
+      mst.push([u, v, w]);
+    }
+  }
+  return mst;
+}
+
+console.log(kruskal(4, [[0,1,10],[0,2,6],[0,3,5],[1,3,15],[2,3,4]]));`
+    },
+    "Topological Sort": {
+      best:"O(V+E)", avg:"O(V+E)", worst:"O(V+E)", space:"O(V)",
+      desc:"Linear ordering of vertices in a DAG such that for every edge u→v, u comes before v.",
+      code: `function topologicalSort(graph) {
+  const visited = new Set();
+  const stack = [];
+  function dfs(node) {
+    visited.add(node);
+    for (const nei of (graph[node] || []))
+      if (!visited.has(nei)) dfs(nei);
+    stack.push(node);
+  }
+  for (const node of Object.keys(graph))
+    if (!visited.has(node)) dfs(node);
+  return stack.reverse();
+}
+
+const g = { 5:[2,0], 4:[0,1], 2:[3], 3:[1], 0:[], 1:[] };
+console.log(topologicalSort(g)); // e.g. [5,4,2,3,1,0]`
+    }
+  },
+
+  Trees: {
+    "Tree DFS": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(h)",
+      desc:"Depth-First traversal of a binary tree (preorder, inorder, postorder).",
+      code: `// Binary tree node: { val, left, right }
+function preorder(root, result = []) {
+  if (!root) return result;
+  result.push(root.val);
+  preorder(root.left, result);
+  preorder(root.right, result);
+  return result;
+}
+function inorder(root, result = []) {
+  if (!root) return result;
+  inorder(root.left, result);
+  result.push(root.val);
+  inorder(root.right, result);
+  return result;
+}
+function postorder(root, result = []) {
+  if (!root) return result;
+  postorder(root.left, result);
+  postorder(root.right, result);
+  result.push(root.val);
+  return result;
+}
+
+const tree = { val:1, left:{val:2,left:{val:4},right:{val:5}}, right:{val:3} };
+console.log('Pre:', preorder(tree));
+console.log('In:', inorder(tree));
+console.log('Post:', postorder(tree));`
+    },
+    "Tree BFS": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(n)",
+      desc:"Level-order traversal of a binary tree using a queue.",
+      code: `function levelOrder(root) {
+  if (!root) return [];
+  const result = [], queue = [root];
+  while (queue.length) {
+    const level = [], size = queue.length;
+    for (let i = 0; i < size; i++) {
+      const node = queue.shift();
+      level.push(node.val);
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+    result.push(level);
+  }
+  return result;
+}
+
+const tree = { val:1, left:{val:2,left:{val:4},right:{val:5}}, right:{val:3} };
+console.log(levelOrder(tree)); // [[1],[2,3],[4,5]]`
+    }
+  },
+
+  Cryptography: {
+    "Caesar Cipher": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(n)",
+      desc:"Simple substitution cipher. Shift each letter by a fixed number.",
+      code: `function caesarEncrypt(text, shift) {
+  return text.replace(/[a-zA-Z]/g, c => {
+    const base = c <= 'Z' ? 65 : 97;
+    return String.fromCharCode((c.charCodeAt(0) - base + shift + 26) % 26 + base);
+  });
+}
+function caesarDecrypt(text, shift) {
+  return caesarEncrypt(text, -shift);
+}
+
+console.log(caesarEncrypt('Hello World', 3)); // Khoor Zruog
+console.log(caesarDecrypt('Khoor Zruog', 3)); // Hello World`
+    },
+    "Rail Fence Cipher": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(n)",
+      desc:"Transposition cipher. Write text in zigzag pattern on rails, then read row by row.",
+      code: `function railFenceEncrypt(text, rails) {
+  const fence = Array.from({length: rails}, () => []);
+  let row = 0, dir = 1;
+  for (const c of text) {
+    fence[row].push(c);
+    row += dir;
+    if (row === 0 || row === rails - 1) dir *= -1;
+  }
+  return fence.flat().join('');
+}
+
+console.log(railFenceEncrypt('HELLOWORLD', 3)); // HOLELWRDLO`
+    },
+    "Polynomial Hash": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Rolling hash: h = (c₀·bⁿ⁻¹ + c₁·bⁿ⁻² + … + cₙ₋₁) mod m",
+      code: `function polyHash(s, base = 31, mod = 1e9 + 7) {
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) {
+    hash = (hash * base + s.charCodeAt(i)) % mod;
+  }
+  return hash;
+}
+
+console.log(polyHash('hello'));
+console.log(polyHash('world'));`
+    }
+  },
+
+  Uncategorized: {
+    "Tower of Hanoi": {
+      best:"O(2ⁿ)", avg:"O(2ⁿ)", worst:"O(2ⁿ)", space:"O(n)",
+      desc:"Move n disks from peg A to peg C using peg B. Never place larger on smaller.",
+      code: `function hanoi(n, from = 'A', to = 'C', aux = 'B', moves = []) {
+  if (n === 1) {
+    moves.push(\`Move disk 1 from \${from} to \${to}\`);
+    return moves;
+  }
+  hanoi(n - 1, from, aux, to, moves);
+  moves.push(\`Move disk \${n} from \${from} to \${to}\`);
+  hanoi(n - 1, aux, to, from, moves);
+  return moves;
+}
+
+console.log(hanoi(3).join('\\n'));`
+    },
+    "Valid Parentheses": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(n)",
+      desc:"Check if brackets are correctly matched and nested using a stack.",
+      code: `function isValidParentheses(s) {
+  const stack = [];
+  const map = { ')':'(', ']':'[', '}':'{' };
+  for (const c of s) {
+    if ('([{'.includes(c)) stack.push(c);
+    else if (stack.pop() !== map[c]) return false;
+  }
+  return stack.length === 0;
+}
+
+console.log(isValidParentheses('()[]{}'));  // true
+console.log(isValidParentheses('(]'));      // false
+console.log(isValidParentheses('{[]}'));    // true`
+    },
+    "N-Queens": {
+      best:"O(n!)", avg:"O(n!)", worst:"O(n!)", space:"O(n)",
+      desc:"Place n queens on n×n board so no two share row, column, or diagonal.",
+      code: `function solveNQueens(n) {
+  const result = [];
+  const board = Array.from({length: n}, () => Array(n).fill('.'));
+  const cols = new Set(), diag1 = new Set(), diag2 = new Set();
+
+  function backtrack(row) {
+    if (row === n) {
+      result.push(board.map(r => r.join('')));
+      return;
+    }
+    for (let col = 0; col < n; col++) {
+      if (cols.has(col) || diag1.has(row-col) || diag2.has(row+col)) continue;
+      board[row][col] = 'Q';
+      cols.add(col); diag1.add(row-col); diag2.add(row+col);
+      backtrack(row + 1);
+      board[row][col] = '.';
+      cols.delete(col); diag1.delete(row-col); diag2.delete(row+col);
+    }
+  }
+  backtrack(0);
+  return result;
+}
+
+console.log(solveNQueens(4));`
+    },
+    "Jump Game": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Each element is max jump length. Can you reach the last index? Greedy solution.",
+      code: `function canJump(nums) {
+  let maxReach = 0;
+  for (let i = 0; i < nums.length; i++) {
+    if (i > maxReach) return false;
+    maxReach = Math.max(maxReach, i + nums[i]);
+  }
+  return true;
+}
+
+console.log(canJump([2,3,1,1,4])); // true
+console.log(canJump([3,2,1,0,4])); // false`
+    },
+    "Best Time to Buy Sell Stock": {
+      best:"O(n)", avg:"O(n)", worst:"O(n)", space:"O(1)",
+      desc:"Find maximum profit from a single buy and sell. One-pass solution.",
+      code: `function maxProfit(prices) {
+  let minPrice = Infinity, maxProf = 0;
+  for (const p of prices) {
+    minPrice = Math.min(minPrice, p);
+    maxProf = Math.max(maxProf, p - minPrice);
+  }
+  return maxProf;
+}
+
+console.log(maxProfit([7,1,5,3,6,4])); // 5 (buy at 1, sell at 6)`
+    }
+  }
+};
+
+/* ================================================================
+   UI LOGIC
+   ================================================================ */
+const sidebar = document.getElementById('sidebar');
+const algoList = document.getElementById('algoList');
+const complexity = document.getElementById('complexity');
+const desc = document.getElementById('desc');
+const codeEditor = document.getElementById('codeEditor');
+const status = document.getElementById('status');
+const algoTitle = document.getElementById('algoTitle');
+const viz = document.getElementById('viz');
+const controls = document.getElementById('controls');
+const vizActions = document.getElementById('vizActions');
+
+let currentCat = null, currentAlgo = null, currentData = null;
+let arr = [], bars = [], cells = [], running = false, speed = 50;
+
+// Build sidebar
+Object.keys(DB).forEach(cat => {
+  const h = document.createElement('h3');
+  h.textContent = cat;
+  sidebar.appendChild(h);
+  const btn = document.createElement('button');
+  btn.className = 'cat-btn';
+  btn.textContent = cat + ` (${Object.keys(DB[cat]).length})`;
+  btn.onclick = () => selectCategory(cat, btn);
+  sidebar.appendChild(btn);
+});
+
+function selectCategory(cat, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = cat;
+  algoList.innerHTML = '';
+  Object.keys(DB[cat]).forEach(name => {
+    const chip = document.createElement('button');
+    chip.className = 'algo-chip';
+    chip.textContent = name;
+    chip.onclick = () => selectAlgo(name, chip);
+    algoList.appendChild(chip);
+  });
+  // auto-select first
+  const first = algoList.querySelector('.algo-chip');
+  if (first) first.click();
+}
+
+function selectAlgo(name, chip) {
+  document.querySelectorAll('.algo-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  currentAlgo = name;
+  currentData = DB[currentCat][name];
+  algoTitle.textContent = name;
+  complexity.innerHTML = `
+    <div class="c-item"><div class="lbl">Best</div><div class="val g">${currentData.best}</div></div>
+    <div class="c-item"><div class="lbl">Average</div><div class="val b">${currentData.avg}</div></div>
+    <div class="c-item"><div class="lbl">Worst</div><div class="val o">${currentData.worst}</div></div>
+    <div class="c-item"><div class="lbl">Space</div><div class="val p">${currentData.space}</div></div>`;
+  desc.textContent = currentData.desc;
+  codeEditor.value = currentData.code;
+  status.textContent = '';
+  status.className = 'status';
+
+  // Visualization for sorting / searching
+  if (currentData.viz) {
+    viz.style.display = 'flex';
+    controls.style.display = 'flex';
+    vizActions.style.display = 'flex';
+    setupViz();
+  } else {
+    viz.style.display = 'none';
+    controls.style.display = 'none';
+    vizActions.style.display = 'none';
+  }
+}
+
+function setupViz() {
+  const isSort = currentCat === 'Sorting';
+  controls.innerHTML = isSort
+    ? `<label>Size <input type="range" id="sz" min="8" max="40" value="18"></label>
+       <label>Speed <input type="range" id="spd" min="5" max="100" value="50"></label>`
+    : `<label>Target <input type="number" id="tgt" value="42" style="width:60px"></label>
+       <label>Size <input type="range" id="sz" min="8" max="25" value="14"></label>
+       <label>Speed <input type="range" id="spd" min="10" max="100" value="50"></label>`;
+  vizActions.innerHTML = `<button class="primary" id="btnVizRun">▶ Animate</button>
+                          <button class="sec" id="btnVizReset">Reset</button>`;
+  document.getElementById('btnVizRun').onclick = runViz;
+  document.getElementById('btnVizReset').onclick = () => genArr();
+  genArr();
+}
+
+function genArr() {
+  const n = +(document.getElementById('sz')?.value || 16);
+  arr = Array.from({length: n}, () => Math.floor(Math.random()*80)+10);
+  if (currentCat === 'Searches' && currentAlgo === 'Binary Search') arr.sort((a,b)=>a-b);
+  if (currentCat === 'Searches' && Math.random() > 0.3) {
+    const t = document.getElementById('tgt');
+    if (t) t.value = arr[Math.floor(Math.random()*n)];
+  }
+  renderViz();
+}
+
+function renderViz() {
+  viz.innerHTML = '';
+  if (currentCat === 'Sorting') {
+    viz.style.alignItems = 'flex-end';
+    viz.style.height = '200px';
+    bars = arr.map(v => {
+      const b = document.createElement('div');
+      b.className = 'bar';
+      b.style.height = (v * 2.2) + 'px';
+      b.innerHTML = `<span>${v}</span>`;
+      viz.appendChild(b);
+      return b;
+    });
+  } else {
+    viz.style.alignItems = 'center';
+    viz.style.height = '80px';
+    cells = arr.map(v => {
+      const c = document.createElement('div');
+      c.className = 'cell';
+      c.textContent = v;
+      viz.appendChild(c);
+      return c;
+    });
+  }
+}
+
+/* Viz helpers */
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function highlight(i, j, type) {
+  if (currentCat === 'Sorting') {
+    if (i>=0 && i<bars.length) bars[i].classList.add(type||'compare');
+    if (j!==undefined && j>=0 && j<bars.length) bars[j].classList.add(type||'compare');
+    await sleep(Math.max(10, 120 - speed));
+    if (i>=0 && i<bars.length) bars[i].classList.remove(type||'compare');
+    if (j!==undefined && j>=0 && j<bars.length) bars[j].classList.remove(type||'compare');
+  } else {
+    if (i>=0 && i<cells.length) cells[i].classList.add(type||'cur');
+    await sleep(Math.max(40, 280*(100-speed)/70));
+    if (i>=0 && i<cells.length) cells[i].classList.remove(type||'cur');
+  }
+}
+async function swap(i, j) {
+  bars[i].classList.add('swap'); bars[j].classList.add('swap');
+  await sleep(Math.max(10, 120 - speed));
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  updateBar(i); updateBar(j);
+  bars[i].classList.remove('swap'); bars[j].classList.remove('swap');
+}
+function updateBar(i) {
+  bars[i].style.height = (arr[i]*2.2)+'px';
+  bars[i].querySelector('span').textContent = arr[i];
+}
+function markSorted(i) { if (bars[i]) bars[i].classList.add('sorted'); }
+function markFound(i) { if (cells[i]) cells[i].classList.add('found'); }
+function markElim(i) { if (cells[i]) cells[i].classList.add('elim'); }
+
+async function runViz() {
+  if (running) return;
+  running = true;
+  speed = +(document.getElementById('spd')?.value || 50);
+  genArr();
+  try {
+    const code = codeEditor.value;
+    if (currentCat === 'Sorting') {
+      const fn = new Function('highlight','swap','sleep','markSorted','updateBar','bars','arr',
+        `"use strict"; ${code}; return { bubbleSort, selectionSort, insertionSort, mergeSort, quickSort, partition, merge };`);
+      const F = fn(highlight, swap, sleep, markSorted, updateBar, bars, arr);
+      const name = currentAlgo.replace(/ /g,'').replace('Sort','') + 'Sort';
+      // map names
+      const map = { 'BubbleSort':'bubbleSort','SelectionSort':'selectionSort','InsertionSort':'insertionSort',
+                    'MergeSort':'mergeSort','QuickSort':'quickSort' };
+      const key = map[currentAlgo.replace(/ /g,'')] || Object.keys(F).find(k => k.toLowerCase().includes(currentAlgo.split(' ')[0].toLowerCase()));
+      await (F[key] || F.bubbleSort)(arr);
+      for (let i=0;i<arr.length;i++) markSorted(i);
+    } else {
+      const fn = new Function('highlight','markFound','markElim','sleep','arr',
+        `"use strict"; ${code}; return { linearSearch, binarySearch };`);
+      const F = fn(highlight, markFound, markElim, sleep, arr);
+      const target = +(document.getElementById('tgt')?.value || 0);
+      const key = currentAlgo.includes('Binary') ? 'binarySearch' : 'linearSearch';
+      const res = await F[key](arr, target);
+      status.textContent = res === -1 ? `Not found` : `Found at index ${res}`;
+      status.className = res === -1 ? 'status err' : 'status ok';
+    }
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+    status.className = 'status err';
+  }
+  running = false;
+}
+
+document.getElementById('btnRun').onclick = () => {
+  if (currentData?.viz) runViz();
+  else {
+    // Just evaluate / show that code is ready
+    try {
+      // basic syntax check
+      new Function(codeEditor.value);
+      status.textContent = '✅ Code is valid. Open browser console (F12) and paste to run demos.';
+      status.className = 'status ok';
+    } catch(e) {
+      status.textContent = '❌ Syntax error: ' + e.message;
+      status.className = 'status err';
+    }
+  }
+};
+document.getElementById('btnRestore').onclick = () => {
+  if (currentData) { codeEditor.value = currentData.code; status.textContent = 'Restored'; status.className = 'status ok'; }
+};
+document.getElementById('btnCopy').onclick = () => {
+  navigator.clipboard.writeText(codeEditor.value);
+  status.textContent = 'Copied!'; status.className = 'status ok';
+};
+
+// Auto-select first category
+const firstCat = sidebar.querySelector('.cat-btn');
+if (firstCat) firstCat.click();
+</script>
+</body>
+</html>
